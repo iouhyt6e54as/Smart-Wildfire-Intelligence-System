@@ -33,6 +33,22 @@ The main objectives of the project are to:
 
 ---
 
+
+##📊 Dataset
+
+The project uses wildfire data from NASA FIRMS (Fire Information for Resource Management System).
+
+The datasets used in the project can be downloaded from the following NASA FIRMS links:
+
+- 1- Download J1V-C2 Dataset
+- 2- Download SV-C2 Dataset 800027
+- 3- Download SV-C2 Dataset 800031
+- 4- Download SV-C2 Dataset 800032
+- 5- Download SV-C2 Dataset 800028
+- 6- Download SV-C2 Dataset 800030
+- 7- Download SV-C2 Dataset 800029
+
+
 ## 🏗️ System Architecture
 
 ```text
