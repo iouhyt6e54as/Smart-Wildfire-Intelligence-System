@@ -1,0 +1,42 @@
+# Smart Wildfire Intelligence System - Lab 1 Configuration
+environment: "production"
+
+hdfs:
+  namenode_rpc: "hdfs://namenode:9000"
+  base_dir: "hdfs://namenode:9000/wildfire"
+  raw_sample_dir: "hdfs://namenode:9000/wildfire/raw/sample"
+  curated_dir: "hdfs://namenode:9000/wildfire/curated"
+  features_dir: "hdfs://namenode:9000/wildfire/features"
+  streaming_fire_dir: "hdfs://namenode:9000/wildfire/curated/streaming_fire"
+  streaming_environmental_dir: "hdfs://namenode:9000/wildfire/curated/streaming_environmental"
+  checkpoints_fire: "hdfs://namenode:9000/wildfire/checkpoints/firms_fire_events"
+  checkpoints_environmental: "hdfs://namenode:9000/wildfire/checkpoints/environmental_data"
+
+kafka:
+  bootstrap_internal: "kafka:9092"
+  bootstrap_external: "localhost:9094"
+  topics:
+    fire_events: "firms_fire_events"
+    environmental_data: "environmental_data"
+    anomaly_alerts: "anomaly_alerts"
+    risk_predictions: "risk_predictions"
+
+spark:
+  master_url: "spark://spark-master:7077"
+  app_name_batch: "Wildfire-Historical-Batch-Pipeline"
+  app_name_profile: "Wildfire-Dataset-Profiler"
+  app_name_streaming_fire: "Wildfire-Streaming-FireEvents"
+  app_name_streaming_env: "Wildfire-Streaming-Environmental"
+  driver_memory: "384m"
+  executor_memory: "768m"
+  shuffle_partitions: 8
+  parquet_compression: "snappy"
+
+storage:
+  local_nasa_dir: "/data/nasa-wildfire-data"
+  reports_profile_dir: "/opt/reports/data_profile"
+  reports_quality_dir: "/opt/reports/data_quality"
+
+simulator:
+  default_rate: 10
+  default_max_events: 100

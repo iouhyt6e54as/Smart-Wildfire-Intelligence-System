@@ -1,0 +1,37 @@
+{
+  "year": 2022,
+  "processing_timestamp": "2026-09-09 16:38:03",
+  "duration_seconds": 15.02,
+  "input_files": [
+    {
+      "file_name": "fire_archive_SV-C2_800030.csv",
+      "size_mb": 1328.58
+    }
+  ],
+  "input_rows": 20000,
+  "invalid_rows": 0,
+  "duplicate_rows": 0,
+  "output_curated_rows": 20000,
+  "output_features_rows": 20000,
+  "hdfs_curated_path": "hdfs://namenode:9000/wildfire/curated/year=2022",
+  "hdfs_features_path": "hdfs://namenode:9000/wildfire/features/year=2022",
+  "spatial_bounds": {
+    "min_latitude": -47.74798,
+    "max_latitude": 72.5014,
+    "min_longitude": -155.29784,
+    "max_longitude": 177.21317
+  },
+  "temporal_bounds": {
+    "min_acq_date": "2022-01-01",
+    "max_acq_date": "2022-01-01"
+  },
+  "value_statistics": {
+    "brightness_min": 208.0,
+    "brightness_max": 367.0,
+    "brightness_avg": 333.65,
+    "frp_min": 0.03,
+    "frp_max": 360.36,
+    "frp_avg": 7.96
+  },
+  "quality_status": "PASSED"
+}

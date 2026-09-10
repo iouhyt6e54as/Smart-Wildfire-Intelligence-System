@@ -1,0 +1,37 @@
+{
+  "year": 2024,
+  "processing_timestamp": "2026-09-10 09:49:18",
+  "duration_seconds": 113.34,
+  "input_files": [
+    {
+      "file_name": "2024.csv",
+      "size_mb": 1624.04
+    }
+  ],
+  "input_rows": 120000,
+  "invalid_rows": 0,
+  "duplicate_rows": 0,
+  "output_curated_rows": 120000,
+  "output_features_rows": 120000,
+  "hdfs_curated_path": "hdfs://namenode:9000/wildfire/curated/year=2024",
+  "hdfs_features_path": "hdfs://namenode:9000/wildfire/features/year=2024",
+  "spatial_bounds": {
+    "min_latitude": -46.78633,
+    "max_latitude": 70.99961,
+    "min_longitude": -175.66766,
+    "max_longitude": 178.05992
+  },
+  "temporal_bounds": {
+    "min_acq_date": "2024-01-01",
+    "max_acq_date": "2024-01-03"
+  },
+  "value_statistics": {
+    "brightness_min": 208.0,
+    "brightness_max": 367.0,
+    "brightness_avg": 336.51,
+    "frp_min": 0.0,
+    "frp_max": 716.8,
+    "frp_avg": 9.5
+  },
+  "quality_status": "PASSED"
+}

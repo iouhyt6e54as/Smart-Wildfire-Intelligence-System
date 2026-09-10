@@ -1,0 +1,373 @@
+name: bigdata-lab
+
+x-airflow-common-env: &airflow-common-env
+  AIRFLOW__CORE__EXECUTOR: LocalExecutor
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER:-airflow}:${POSTGRES_PASSWORD:-airflow}@postgres:5432/${POSTGRES_DB:-airflow}
+  AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+  AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+  AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
+  AIRFLOW__CORE__FERNET_KEY: ""
+  AIRFLOW__WEBSERVER__SECRET_KEY: "change-me-please"
+  AIRFLOW__CORE__PARALLELISM: 4
+  AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: 4
+  HDFS_NAMENODE: "hdfs://namenode:9000"
+  SPARK_MASTER: "spark://spark-master:7077"
+  KAFKA_BOOTSTRAP: "kafka:9092"
+
+networks:
+  bigdata-net:
+    name: bigdata-net
+
+volumes:
+  namenode_data:
+  datanode_data:
+  postgres_data:
+  kafka_data:
+
+services:
+  # -------------------------------------------------------------------------
+  # HDFS (NameNode + DataNode)
+  # -------------------------------------------------------------------------
+  namenode:
+    image: bde2020/hadoop-namenode:${HADOOP_IMAGE_TAG}
+    container_name: namenode
+    hostname: namenode
+    restart: unless-stopped
+    env_file: ./hadoop/hadoop.env
+    environment:
+      - CLUSTER_NAME=bigdata-lab
+      - HADOOP_HEAPSIZE=512
+    ports:
+      - "${NAMENODE_UI_PORT}:9870"
+      - "${HDFS_RPC_PORT}:9000"
+    volumes:
+      - namenode_data:/hadoop/dfs/name
+    networks: [bigdata-net]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9870 > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 768M
+        reservations:
+          memory: 512M
+
+  datanode:
+    image: bde2020/hadoop-datanode:${HADOOP_IMAGE_TAG}
+    container_name: datanode
+    hostname: datanode
+    restart: unless-stopped
+    depends_on:
+      namenode:
+        condition: service_healthy
+    env_file: ./hadoop/hadoop.env
+    environment:
+      - SERVICE_PRECONDITION=namenode:9870
+      - HADOOP_HEAPSIZE=512
+    ports:
+      - "${DATANODE_UI_PORT}:9864"
+    volumes:
+      - datanode_data:/hadoop/dfs/data
+    networks: [bigdata-net]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9864 > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.8"
+          memory: 768M
+        reservations:
+          memory: 512M
+
+  # -------------------------------------------------------------------------
+  # Spark (standalone cluster: 1 master + 1 worker)
+  # -------------------------------------------------------------------------
+  spark-master:
+    image: bde2020/spark-master:${SPARK_IMAGE_TAG}
+    container_name: spark-master
+    hostname: spark-master
+    restart: unless-stopped
+    environment:
+      - INIT_DAEMON_STEP=setup_spark
+      - SPARK_DAEMON_MEMORY=384m
+      - PYTHONPATH=/opt/src:/opt/spark-apps
+    ports:
+      - "${SPARK_MASTER_UI_PORT}:8080"
+      - "${SPARK_MASTER_PORT}:7077"
+    volumes:
+      - ./spark/apps:/opt/spark-apps
+      - ./nasa-wildfire-data:/data/nasa-wildfire-data:ro
+      - ./src:/opt/src:ro
+      - ./configs:/opt/configs:ro
+      - ./reports:/opt/reports
+    networks: [bigdata-net]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080 > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 2G
+        reservations:
+          memory: 1G
+
+  spark-worker:
+    image: bde2020/spark-worker:${SPARK_IMAGE_TAG}
+    container_name: spark-worker
+    hostname: spark-worker
+    restart: unless-stopped
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    environment:
+      - SPARK_MASTER=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=1280M
+      - SPARK_WORKER_CORES=2
+      - SPARK_DAEMON_MEMORY=384m
+      - PYTHONPATH=/opt/src:/opt/spark-apps
+    ports:
+      - "${SPARK_WORKER_UI_PORT}:8081"
+    volumes:
+      - ./spark/apps:/opt/spark-apps
+      - ./nasa-wildfire-data:/data/nasa-wildfire-data:ro
+      - ./src:/opt/src:ro
+      - ./configs:/opt/configs:ro
+      - ./reports:/opt/reports
+    networks: [bigdata-net]
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1536M
+        reservations:
+          memory: 1024M
+
+  # -------------------------------------------------------------------------
+  # Jupyter Notebook (Optional Tool Profile)
+  # -------------------------------------------------------------------------
+  jupyter:
+    build:
+      context: ./jupyter
+      args:
+        PYSPARK_VERSION: ${PYSPARK_VERSION}
+    container_name: jupyter
+    hostname: jupyter
+    profiles: ["tools"]
+    restart: unless-stopped
+    depends_on:
+      spark-master:
+        condition: service_healthy
+      namenode:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=lab
+    ports:
+      - "${JUPYTER_PORT}:8888"
+    volumes:
+      - ./jupyter/notebooks:/home/jovyan/work
+      - ./spark/apps:/home/jovyan/work/spark-apps
+    networks: [bigdata-net]
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 768M
+        reservations:
+          memory: 384M
+
+  # -------------------------------------------------------------------------
+  # Kafka (KRaft mode - no Zookeeper) + Kafka UI
+  # -------------------------------------------------------------------------
+  kafka:
+    image: apache/kafka:${KAFKA_IMAGE_TAG}
+    container_name: kafka
+    hostname: kafka
+    restart: unless-stopped
+    environment:
+      - KAFKA_NODE_ID=1
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+      - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
+      - CLUSTER_ID=bigdata-lab-kraft-cluster-01
+      - KAFKA_HEAP_OPTS=-Xmx512M -Xms256M
+    ports:
+      - "${KAFKA_INTERNAL_PORT}:9092"
+      - "${KAFKA_EXTERNAL_PORT}:9094"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks: [bigdata-net]
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-cluster.sh cluster-id --bootstrap-server localhost:9092 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 768M
+        reservations:
+          memory: 512M
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:${KAFKA_UI_IMAGE_TAG}
+    container_name: kafka-ui
+    hostname: kafka-ui
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=bigdata-lab
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+    ports:
+      - "${KAFKA_UI_PORT}:8080"
+    networks: [bigdata-net]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 384M
+        reservations:
+          memory: 192M
+
+  # -------------------------------------------------------------------------
+  # PostgreSQL (Unified: Airflow metadata + Wildfire application database)
+  # -------------------------------------------------------------------------
+  postgres:
+    image: postgres:${POSTGRES_IMAGE_TAG}
+    container_name: airflow-postgres
+    hostname: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-airflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-airflow}
+      POSTGRES_DB: ${POSTGRES_DB:-airflow}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init-wildfire-db.sql:/docker-entrypoint-initdb.d/init-wildfire-db.sql:ro
+    networks: [bigdata-net]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-airflow} -d ${POSTGRES_DB:-airflow}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # -------------------------------------------------------------------------
+  # Airflow (Optional Orchestration Profile - LocalExecutor)
+  # -------------------------------------------------------------------------
+  airflow-init:
+    build:
+      context: ./airflow/docker
+      args:
+        AIRFLOW_BASE_IMAGE: ${AIRFLOW_BASE_IMAGE}
+    image: bigdata-lab-airflow:local
+    container_name: airflow-init
+    profiles: ["orchestration"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      <<: *airflow-common-env
+    entrypoint: >
+      bash -c "
+      airflow db migrate &&
+      airflow users create --username ${AIRFLOW_ADMIN_USER} --password ${AIRFLOW_ADMIN_PASSWORD} --firstname Admin --lastname User --role Admin --email ${AIRFLOW_ADMIN_EMAIL}
+      "
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+    networks: [bigdata-net]
+
+  airflow-webserver:
+    image: bigdata-lab-airflow:local
+    container_name: airflow-webserver
+    profiles: ["orchestration"]
+    restart: unless-stopped
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    environment:
+      <<: *airflow-common-env
+    command: webserver
+    ports:
+      - "${AIRFLOW_WEBSERVER_PORT}:8080"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+    networks: [bigdata-net]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.8"
+          memory: 640M
+        reservations:
+          memory: 384M
+
+  airflow-scheduler:
+    image: bigdata-lab-airflow:local
+    container_name: airflow-scheduler
+    profiles: ["orchestration"]
+    restart: unless-stopped
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    environment:
+      <<: *airflow-common-env
+    command: scheduler
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+    networks: [bigdata-net]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.8"
+          memory: 640M
+        reservations:
+          memory: 384M

@@ -1,0 +1,147 @@
+{
+  "generated_at": "2026-09-09 14:08:05",
+  "duration_seconds": 385.33,
+  "train_years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "val_years": [
+    2025
+  ],
+  "test_years": [
+    2026
+  ],
+  "row_counts": {
+    "train": 100000,
+    "val": 20000,
+    "test": 40000
+  },
+  "label_thresholds": {
+    "frp_low_quantile": 3.37,
+    "frp_high_quantile": 7.61
+  },
+  "label_index_mapping": {
+    "0": "High",
+    "1": "Low",
+    "2": "Medium"
+  },
+  "class_distribution": {
+    "train": {
+      "High": 34036,
+      "Low": 33063,
+      "Medium": 32901
+    },
+    "val": {
+      "High": 6356,
+      "Low": 6809,
+      "Medium": 6835
+    },
+    "test": {
+      "High": 11884,
+      "Low": 15034,
+      "Medium": 13082
+    }
+  },
+  "models": {
+    "random_forest": {
+      "validation": {
+        "accuracy": 0.675,
+        "f1": 0.6829,
+        "weightedPrecision": 0.7142,
+        "weightedRecall": 0.675,
+        "confusion_matrix": {
+          "0.0": {
+            "0.0": 3965,
+            "1.0": 75,
+            "2.0": 2316
+          },
+          "1.0": {
+            "0.0": 74,
+            "1.0": 4584,
+            "2.0": 2151
+          },
+          "2.0": {
+            "0.0": 1365,
+            "1.0": 519,
+            "2.0": 4951
+          }
+        }
+      },
+      "test": {
+        "accuracy": 0.6874,
+        "f1": 0.6952,
+        "weightedPrecision": 0.7271,
+        "weightedRecall": 0.6874,
+        "confusion_matrix": {
+          "0.0": {
+            "0.0": 7214,
+            "1.0": 319,
+            "2.0": 4351
+          },
+          "1.0": {
+            "0.0": 56,
+            "1.0": 10586,
+            "2.0": 4392
+          },
+          "2.0": {
+            "0.0": 2111,
+            "1.0": 1274,
+            "2.0": 9697
+          }
+        }
+      }
+    },
+    "gbt_one_vs_rest": {
+      "validation": {
+        "accuracy": 0.6822,
+        "f1": 0.6864,
+        "weightedPrecision": 0.6965,
+        "weightedRecall": 0.6822,
+        "confusion_matrix": {
+          "0.0": {
+            "0.0": 4078,
+            "1.0": 209,
+            "2.0": 2069
+          },
+          "1.0": {
+            "0.0": 93,
+            "1.0": 5100,
+            "2.0": 1616
+          },
+          "2.0": {
+            "0.0": 1420,
+            "1.0": 949,
+            "2.0": 4466
+          }
+        }
+      },
+      "test": {
+        "accuracy": 0.6966,
+        "f1": 0.7006,
+        "weightedPrecision": 0.7107,
+        "weightedRecall": 0.6966,
+        "confusion_matrix": {
+          "0.0": {
+            "0.0": 7599,
+            "1.0": 543,
+            "2.0": 3742
+          },
+          "1.0": {
+            "0.0": 79,
+            "1.0": 11667,
+            "2.0": 3288
+          },
+          "2.0": {
+            "0.0": 2448,
+            "1.0": 2036,
+            "2.0": 8598
+          }
+        }
+      }
+    }
+  },
+  "best_model_by_test_f1": "gbt_one_vs_rest"
+}

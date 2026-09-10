@@ -1,0 +1,117 @@
+{
+  "year": 2024,
+  "profiling_duration_sec": 57.73,
+  "file_metadata": [
+    {
+      "file_name": "2024.csv",
+      "file_path": "/data/nasa-wildfire-data/2024/2024.csv",
+      "file_size_bytes": 1702929481,
+      "file_size_mb": 1624.04
+    }
+  ],
+  "total_files": 1,
+  "total_size_mb": 1624.04,
+  "total_rows": 50000,
+  "duplicate_rows": 0,
+  "valid_rows_estimate": 50000,
+  "columns": [
+    "latitude",
+    "longitude",
+    "brightness",
+    "scan",
+    "track",
+    "acq_date",
+    "acq_time",
+    "satellite",
+    "instrument",
+    "confidence",
+    "version",
+    "bright_t31",
+    "frp",
+    "daynight",
+    "type"
+  ],
+  "null_counts": {
+    "latitude": 0,
+    "longitude": 0,
+    "brightness": 0,
+    "scan": 0,
+    "track": 0,
+    "acq_date": 0,
+    "acq_time": 0,
+    "satellite": 0,
+    "instrument": 0,
+    "confidence": 0,
+    "version": 0,
+    "bright_t31": 0,
+    "frp": 0,
+    "daynight": 0,
+    "type": 0
+  },
+  "validation": {
+    "invalid_latitude_count": 0,
+    "invalid_longitude_count": 0,
+    "invalid_date_count": 0,
+    "negative_frp_count": 0
+  },
+  "spatial_bounds": {
+    "min_latitude": -46.50758,
+    "max_latitude": 70.99815,
+    "min_longitude": -175.66766,
+    "max_longitude": 174.97035
+  },
+  "temporal_bounds": {
+    "min_acq_date": "2024-01-01",
+    "max_acq_date": "2024-01-02"
+  },
+  "numeric_statistics": {
+    "brightness": {
+      "min": 208.0,
+      "max": 367.0,
+      "avg": 335.77
+    },
+    "bright_t31": {
+      "min": 234.28,
+      "max": 381.38
+    },
+    "frp": {
+      "min": 0.0,
+      "max": 716.8,
+      "avg": 10.12
+    },
+    "scan": {
+      "min": 0.32,
+      "max": 0.8
+    },
+    "track": {
+      "min": 0.36,
+      "max": 0.78
+    }
+  },
+  "distinct_values": {
+    "satellites": [
+      "SNPP"
+    ],
+    "instruments": [
+      "SNPP"
+    ],
+    "confidences": [
+      "n",
+      "h",
+      "l"
+    ],
+    "daynight": [
+      "N",
+      "D"
+    ],
+    "fire_types": [
+      0,
+      2,
+      3,
+      1
+    ],
+    "versions": [
+      "2"
+    ]
+  }
+}

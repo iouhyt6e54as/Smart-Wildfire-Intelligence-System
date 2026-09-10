@@ -1,0 +1,50 @@
+{
+  "generated_at": "2026-09-09 19:09:58",
+  "duration_seconds": 199.43,
+  "target": "frp (Fire Radiative Power, MW — proxy for fire size/intensity)",
+  "train_years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "val_years": [
+    2025
+  ],
+  "test_years": [
+    2026
+  ],
+  "row_counts": {
+    "train": 100000,
+    "val": 20000,
+    "test": 40000
+  },
+  "models": {
+    "random_forest": {
+      "validation": {
+        "rmse": 14.2853,
+        "mae": 5.9422,
+        "r2": 0.4913
+      },
+      "test": {
+        "rmse": 14.6747,
+        "mae": 5.6116,
+        "r2": 0.2569
+      }
+    },
+    "gbt": {
+      "validation": {
+        "rmse": 14.3169,
+        "mae": 6.3609,
+        "r2": 0.489
+      },
+      "test": {
+        "rmse": 14.6024,
+        "mae": 5.1503,
+        "r2": 0.2642
+      }
+    }
+  },
+  "best_model_by_test_rmse": "gbt"
+}

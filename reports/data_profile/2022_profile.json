@@ -1,0 +1,117 @@
+{
+  "year": 2022,
+  "profiling_duration_sec": 52.4,
+  "file_metadata": [
+    {
+      "file_name": "fire_archive_SV-C2_800030.csv",
+      "file_path": "/data/nasa-wildfire-data/2022/fire_archive_SV-C2_800030.csv",
+      "file_size_bytes": 1393120589,
+      "file_size_mb": 1328.58
+    }
+  ],
+  "total_files": 1,
+  "total_size_mb": 1328.58,
+  "total_rows": 50000,
+  "duplicate_rows": 0,
+  "valid_rows_estimate": 50000,
+  "columns": [
+    "latitude",
+    "longitude",
+    "brightness",
+    "scan",
+    "track",
+    "acq_date",
+    "acq_time",
+    "satellite",
+    "instrument",
+    "confidence",
+    "version",
+    "bright_t31",
+    "frp",
+    "daynight",
+    "type"
+  ],
+  "null_counts": {
+    "latitude": 0,
+    "longitude": 0,
+    "brightness": 0,
+    "scan": 0,
+    "track": 0,
+    "acq_date": 0,
+    "acq_time": 0,
+    "satellite": 0,
+    "instrument": 0,
+    "confidence": 0,
+    "version": 0,
+    "bright_t31": 0,
+    "frp": 0,
+    "daynight": 0,
+    "type": 0
+  },
+  "validation": {
+    "invalid_latitude_count": 0,
+    "invalid_longitude_count": 0,
+    "invalid_date_count": 0,
+    "negative_frp_count": 0
+  },
+  "spatial_bounds": {
+    "min_latitude": -47.74798,
+    "max_latitude": 72.5014,
+    "min_longitude": -176.13264,
+    "max_longitude": 177.21317
+  },
+  "temporal_bounds": {
+    "min_acq_date": "2022-01-01",
+    "max_acq_date": "2022-01-02"
+  },
+  "numeric_statistics": {
+    "brightness": {
+      "min": 208.0,
+      "max": 367.0,
+      "avg": 333.74
+    },
+    "bright_t31": {
+      "min": 217.37,
+      "max": 377.71
+    },
+    "frp": {
+      "min": 0.03,
+      "max": 416.4,
+      "avg": 8.27
+    },
+    "scan": {
+      "min": 0.32,
+      "max": 0.8
+    },
+    "track": {
+      "min": 0.36,
+      "max": 0.78
+    }
+  },
+  "distinct_values": {
+    "satellites": [
+      "SNPP"
+    ],
+    "instruments": [
+      "SNPP"
+    ],
+    "confidences": [
+      "h",
+      "n",
+      "l"
+    ],
+    "daynight": [
+      "N",
+      "D"
+    ],
+    "fire_types": [
+      2,
+      0,
+      3,
+      1
+    ],
+    "versions": [
+      "2"
+    ]
+  }
+}
