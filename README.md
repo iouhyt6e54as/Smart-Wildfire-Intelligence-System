@@ -34,7 +34,7 @@ The main objectives of the project are to:
 ---
 
 
-##📊 Dataset
+## 📊 Dataset
 
 The project uses wildfire data from NASA FIRMS (Fire Information for Resource Management System).
 
